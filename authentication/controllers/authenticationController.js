@@ -317,7 +317,7 @@ function sendPinEmail(emailAddress, name, pinCode) {
             service: 'gmail',
             auth: {
                    user: 'cz3003cloud9@gmail.com',
-                   pass: require('../config/pass').email_password
+                   pass: process.env.email_password
                }
            });
         let mailOptions = {
