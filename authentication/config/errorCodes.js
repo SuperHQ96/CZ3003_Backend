@@ -8,5 +8,6 @@ exports.errorCodes = {
     userNotFound: 406,
     invalidEmailOrPassword: 407,
     invalidPin: 408,
-    emailCouldNotBeSent: 409
+    emailCouldNotBeSent: 409,
+    others: 410
 }

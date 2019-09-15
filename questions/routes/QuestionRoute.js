@@ -1,5 +1,6 @@
 const {questionController} = require('../controllers/QuestionController');
 const tokenAuth = require('../middlewares/tokenAuth');
+const internalAuth = require('../middlewares/internalAuth');
 
 module.exports = (route, app) => {
     app.route(route + '/')
@@ -7,6 +8,9 @@ module.exports = (route, app) => {
 
     app.route(route + '/userQuestions')
     .get(tokenAuth, questionController.getUserQuestions);
+
+    app.route(route + '/getQuestions')
+    .post(internalAuth, tokenAuth, questionController.getQuestions);
 
     app.route(route + '/save')
     .post(tokenAuth, questionController.saveNewQuestion);

@@ -1,15 +1,11 @@
 exports.errorMessages = {
     noAuthenticationTokenProvided: "No authentication token provided",
     invalidAuthenticationToken: "Invalid authentication token",
-    questionNotFound: "Question could not be found",
-    mongoDBQuestionSearchError: "Something went wrong while trying to search for question in database",
-    noQuestionTextEntered: "Please enter the question text",
-    noQuestionDifficulty: "Please select the question difficulty",
-    noQuestionChoices: "Please enter a few choices for the question",
-    noQuestionCorrectOption: "Please indicate which is the correct option",
-    noQuestionTopic: "Please indicate which topic does the question belong to",
-    mongoDBQuestionSaveError: "Something went wrong while trying to save question",
-    questionNotSavedProperly: "Question was not saved properly",
-    mongoDBQuestionCorrectIncrementError: "Something went wrong while trying to increment the question's number of correct answers",
-    mongoDBQuestionIncorrectIncrementError: "Something went wrong while trying to increment the question's number of incorrect answers"
+    challengeNotFound: "Challenge could not be found",
+    mongoDBChallengeSearchError: "Something went wrong while trying to search for challenge in database",
+    mongoDBChallengeSaveError: "Something went wrong while trying to save challenge",
+    mongoDBChallengeUpdateError: "Something went wrong while trying to update challenge",
+    challengeNotSavedProperly: "Challenge was not saved properly",
+    challengeeIDNotProvided: "Please provide the challengee ID",
+    challengerTimingsNotProvided: "Challenger timings for each question is not provided"
 }

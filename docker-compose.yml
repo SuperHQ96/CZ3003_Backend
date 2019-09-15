@@ -18,6 +18,10 @@ services:
     build:
       dockerfile: Dockerfile
       context: ./questions
+    environment:
+      - email_password=${email_password}
+      - jwtPrivateKey=${jwtPrivateKey}
+      - internalPassword=${internalPassword}
     ports:
       - '5000:5000'
     networks:
@@ -33,10 +37,52 @@ services:
 
     environment:
       - email_password=${email_password}
+      - jwtPrivateKey=${jwtPrivateKey}
+      - internalPassword=${internalPassword}
 
     # with nginx
     ports:
       - '3000:3000'
+
+    networks:
+      - cz3003
+
+  challenges:
+    container_name: challenges
+    restart: always
+    
+    build:
+      dockerfile: Dockerfile
+      context: ./challenges
+
+    environment:
+      - email_password=${email_password}
+      - jwtPrivateKey=${jwtPrivateKey}
+      - internalPassword=${internalPassword}
+
+    # with nginx
+    ports:
+      - '7000:7000'
+
+    networks:
+      - cz3003
+
+  games:
+    container_name: games
+    restart: always
+    
+    build:
+      dockerfile: Dockerfile
+      context: ./games
+
+    environment:
+      - email_password=${email_password}
+      - jwtPrivateKey=${jwtPrivateKey}
+      - internalPassword=${internalPassword}
+
+    # with nginx
+    ports:
+      - '13000:13000'
 
     networks:
       - cz3003

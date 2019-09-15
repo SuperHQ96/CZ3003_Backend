@@ -30,6 +30,30 @@ class QuestionController {
         }
     }
 
+    // Pass a list of questionIDs in req.body.questionIDs
+    async getQuestions(req, res) {
+        let questions = [];
+        let question
+        try {
+            req.body.questionIDs.forEach(async (ID) => {
+                question = await questionProcessor.getQuestionDAO(ID);
+                if(!question) {
+                    questions.append(null)
+                } else {
+                    questions.append(question)
+                }
+            })
+            
+            return res.status(200).send({
+                questions
+            })
+        } catch (err) {
+            return res.status(errorCodes.mongoDBError).send({
+                    error : errorMessages.mongoDBQuestionSearchError
+            });
+        }
+    }
+
     async getUserQuestions(req, res) {
         try {
             var questions = await questionProcessor.getAllUserQuestionsDAO(req.user._id);
@@ -105,7 +129,7 @@ class QuestionController {
 
     async updateQuestion(req, res) {
         try {
-            var question = await questionProcessor.getQuestionDAO(req.body.videoID);
+            var question = await questionProcessor.getQuestionDAO(req.body.questionID);
         } catch (error) {
             return res.status(errorCodes.mongoDBError).send({
                 error : errorMessages.mongoDBQuestionSearchError
@@ -150,7 +174,7 @@ class QuestionController {
 
     async incrementCorrect(req, res) {
         try {
-            var question = await questionProcessor.getQuestionDAO(req.body.videoID);
+            var question = await questionProcessor.getQuestionDAO(req.body.questionID);
         } catch (error) {
             return res.status(errorCodes.mongoDBError).send({
                 error : errorMessages.mongoDBQuestionSearchError
@@ -178,7 +202,7 @@ class QuestionController {
 
     async incrementIncorrect(req, res) {
         try {
-            var question = await questionProcessor.getQuestionDAO(req.body.videoID);
+            var question = await questionProcessor.getQuestionDAO(req.body.questionID);
         } catch (error) {
             return res.status(errorCodes.mongoDBError).send({
                 error : errorMessages.mongoDBQuestionSearchError
@@ -206,7 +230,7 @@ class QuestionController {
 
     async deleteQuestion(req, res) {
         try {
-            var question = await questionProcessor.getQuestionDAO(req.body.videoID);
+            var question = await questionProcessor.getQuestionDAO(req.body.questionID);
         } catch (error) {
             return res.status(errorCodes.mongoDBError).send({
                 error : errorMessages.mongoDBQuestionSearchError

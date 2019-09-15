@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const questionSchema = mongoose.Schema({
+const QuestionSchema = mongoose.Schema({
     text: {
         type: String,
         required: true
@@ -28,6 +28,6 @@ const questionSchema = mongoose.Schema({
     }
 })
 
-const Question = mongoose.model('Question', questionSchema);
+const Question = mongoose.model('Question', QuestionSchema);
 
 exports.Question = Question;
