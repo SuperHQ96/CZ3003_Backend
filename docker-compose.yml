@@ -87,6 +87,26 @@ services:
     networks:
       - cz3003
 
+  messages:
+    container_name: messages
+    restart: always
+    
+    build:
+      dockerfile: Dockerfile
+      context: ./messages
+
+    environment:
+      - email_password=${email_password}
+      - jwtPrivateKey=${jwtPrivateKey}
+      - internalPassword=${internalPassword}
+
+    # with nginx
+    ports:
+      - '11000:11000'
+
+    networks:
+      - cz3003
+
   # Troubleshooting: command line may have this error: Insufficient free space
   # for journal files. Please make at least 3379MB available in /data/db/journal
   # or use --smallfiles. This is likely because containers may not completely be
