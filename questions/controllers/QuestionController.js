@@ -35,12 +35,23 @@ class QuestionController {
         let questions = [];
         let question
         try {
-            req.body.questionIDs.forEach(async (ID) => {
-                question = await questionProcessor.getQuestionDAO(ID);
-                if(!question) {
-                    questions.append(null)
+            await new Promise((resolve, reject) => {
+                var counter = 0;
+                if(req.body.questionIDs.length > 0) {
+                    req.body.questionIDs.forEach(async (ID) => {
+                        question = await questionProcessor.getQuestionDAO(ID);
+                        if(!question) {
+                            questions.push(null)
+                        } else {
+                            questions.push(question)
+                        }
+                        counter++;
+                        if(counter == req.body.questionIDs.length) {
+                            resolve();
+                        }
+                    })
                 } else {
-                    questions.append(question)
+                    resolve();
                 }
             })
             
@@ -52,6 +63,21 @@ class QuestionController {
                     error : errorMessages.mongoDBQuestionSearchError
             });
         }
+    }
+
+    async getSampleQuestions(req, res) {
+        try {
+            var questions = await questionProcessor.getQuestionsSampleDAO(Number(req.query.number), Number(req.query.difficulty));
+        } catch(error) {
+            return res.status(errorCodes.mongoDBError).send({
+                error: errorMessages.mongoDBQuestionSearchError
+            })
+        }
+        return res.status(200).send({
+            data: {
+                questions
+            }
+        })
     }
 
     async getUserQuestions(req, res) {

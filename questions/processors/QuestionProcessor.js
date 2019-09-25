@@ -13,6 +13,13 @@ class QuestionProcessor {
         return Question.find({authorID: userID}).exec();
     }
 
+    getQuestionsSampleDAO(number, difficulty){
+        return Question.aggregate([
+            {$match: {difficulty: difficulty}},
+            {$sample: {size : number}}
+        ]).exec();
+    }
+
     saveQuestionDAO(json) {
         const newQuestion = new Question({
             text: json.text,

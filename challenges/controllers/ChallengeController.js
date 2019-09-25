@@ -100,7 +100,7 @@ class ChallengeController {
         let questions = []
         req.body.challengerTimings.forEach((timing) => {
             challengerTiming += timing.timing,
-            questions.append(timing.questionID)
+            questions.push(timing.questionID)
         })
         let challengerScore = calculateScore(req.body.challengerTimings);
         try {
@@ -132,13 +132,25 @@ class ChallengeController {
     // req.body.challengeeTimings should be an array where each item 
     // contains questionID, timing and correct fields
     async updateChallenge(req, res) {
+        try {
+            var challenge = await challengeProcessor.getChallengeDAO(req.body.challengeID);
+        } catch (err) {
+            return res.status(errorCodes.mongoDBError).send({
+                error : errorMessages.mongoDBChallengeSearchError
+            });
+        }
+        if(!challenge) {
+            return res.status(errorCodes.notFound).send({
+                error: errorMessages.challengeNotFound
+            })
+        }
         let challengeeTiming = 0;
         req.body.challengeeTimings.forEach((timing) => {
             challengeeTiming += timing.timing
         })
         let challengeeScore = calculateScore(req.body.challengeeTimings);
         try {
-            var challenge = await challengeProcessor.updateChallengeDAO(req.body.challengeID, {
+            challenge = await challengeProcessor.updateChallengeDAO(req.body.challengeID, {
                 challengeeTiming,
                 challengeeScore,
                 challengeeTimings: req.body.challengeeTimings

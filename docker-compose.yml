@@ -95,7 +95,7 @@ services:
   # more details
   mongo:
     container_name: mongo
-    image: mongo:3.0.4
+    image: mongo:3.4.23
 
     networks:
       - cz3003

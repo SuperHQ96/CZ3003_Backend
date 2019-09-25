@@ -88,6 +88,49 @@ class AuthenticationController {
 
     }
 
+    async getRandomUser(req, res) {
+        try {
+            var user = await authenticationProcessor.getRandomUserDAO();
+        } catch(error) {
+            return res.status(errorCodes.mongoDBError).send({
+                error: errorMessages.mongoDBUserSearchError
+            })
+        }
+        user = {
+            _id: user[0]._id,
+            avatar: user[0].avatar,
+            email: user[0].email,
+            admin: user[0].admin,
+            name: user[0].name
+        }
+        return res.status(200).send({
+            data: {
+                user
+            }
+        })
+    }
+
+    async searchUser(req, res) {
+        try {
+            var user = await authenticationProcessor.getUserByNameDAO(req.query.name);
+        } catch (error) {
+            return res.status(errorCodes.mongoDBError).send({
+                error: errorMessages.mongoDBUserSearchError
+            })
+        }
+        return res.status(200).send({
+            data: {
+                user: user ?  {
+                    avatar: user.avatar,
+                    _id: user._id,
+                    email: user.email,
+                    admin: user.admin,
+                    name: user.name
+                } : undefined
+            }
+        })
+    }
+
     async login(req, res) {
 
         if(!req.body.email | req.body.email === "") {

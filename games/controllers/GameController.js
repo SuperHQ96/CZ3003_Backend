@@ -38,28 +38,27 @@ class GameController {
 
         gameQuestions.forEach((gameQuestion) => {
             if(gameQuestion) {
-                questionIDs.append(gameQuestion.questionID)
+                questionIDs.push(gameQuestion.questionID)
             }
         })
 
         axios.defaults.headers.post['Content-Type'] = 'application/json';
         axios.defaults.headers.post['token'] = req.header('token');
         axios.defaults.headers.post['intPass'] = process.env.internalPassword;
-
-       axios.post('http://questions:5000/api/questions/getQuestions', {
+        axios.post('http://questions:5000/api/questions/getQuestions', {
             questionIDs
         })
         .then((response) => {
             return res.status(200).send({
                 data: {
                     game,
-                    questions: response.questions
+                    questions: response.data.questions
                 }
             })
         })
         .catch((error) => {
-            return res.status(parseInt(error.message.replace( /^\D+/g, ''))).send(
-                error.response.data
+            return res.status(400).send(
+                error
             )
         })
 
@@ -75,14 +74,34 @@ class GameController {
         }
         axios.defaults.headers.get['Content-Type'] = 'application/json';
         axios.defaults.headers.get['token'] = req.header('token');
+        var hiScoresArray = [];
         try {
-            hiScores = hiScores.map(async (hiScore) => {
-                let { data } = await axios.get(`http://questions:5000/api/questions?_id=${hiScore._id}`);
-                return {
-                    _id: hiScore._id,
-                    question: data.question,
-                    gameID: hiScore.gameID,
-                    score: hiScore.score
+            await new Promise((resolve, reject) => {
+                var counter = 0;
+                if(hiScores.length > 0) {
+                    hiScores.forEach(async (hiScore) => {
+                        try {
+                            let { data } = await axios.get(`http://questions:5000/api/questions?_id=${hiScore.questionID}`);
+                            hiScoresArray.push({
+                                _id: hiScore._id,
+                                question: data.data.question,
+                                gameID: hiScore.gameID,
+                                score: hiScore.score
+                            })
+                            counter++;
+                            if(counter === hiScores.length) {
+                                resolve();
+                            }
+                        } catch(error) {
+                            hiScoresArray.push(null);
+                            counter++;
+                            if(counter === hiScores.length) {
+                                resolve();
+                            }
+                        }
+                    })
+                } else {
+                    resolve();
                 }
             })
         } catch (err) {
@@ -93,7 +112,7 @@ class GameController {
 
         return res.status(200).send({
             data: {
-                hiScores
+                hiScores: hiScoresArray
             }
         })
         
@@ -149,37 +168,49 @@ class GameController {
                 error: errorMessages.mongoDBGameSaveError
             })
         }
-        let hiScore;
-        req.body.gameTimings.forEach(async (item) => {
-            let score = calculateSingleScore(item)
-            // For each question, save a new gameQuestion document as well 
-            // as check if there is a high score for the
-            // player for this question.
-            // If there is no high score, create a new high score record
-            // and save the score just calculated as the high score as well
-            // as the gameID.
-            // If there is a high score, see if the newly calculated score
-            // is higher than the previous high score. If it is, replace the
-            // previous high score with the new score calculated and replace
-            // the gameID as well.
-            await gameProcessor.saveGameQuestionDAO({
-                gameID: game._id,
-                questionID: item.questionID,
-                timing: item.timing,
-                correct: item.correct
-            })
-            hiScore = await gameProcessor.getQuestionHiScoreDAO(req.user._id, item.questionID)
-            if(!hiScore) {
-                await gameProcessor.saveHiScoreDAO({
-                    playerID: req.user._id,
-                    questionID: item.questionID,
-                    gameID: game._id,
-                    score
+        await new Promise((resolve, reject) => {
+            var counter = 0;
+            if(req.body.gameTimings.length > 0) {
+                req.body.gameTimings.forEach(async (item) => {
+                    counter++;
+                    let score = calculateSingleScore(item)
+                    let hiScore;
+                    // For each question, save a new gameQuestion document as well 
+                    // as check if there is a high score for the
+                    // player for this question.
+                    // If there is no high score, create a new high score record
+                    // and save the score just calculated as the high score as well
+                    // as the gameID.
+                    // If there is a high score, see if the newly calculated score
+                    // is higher than the previous high score. If it is, replace the
+                    // previous high score with the new score calculated and replace
+                    // the gameID as well.
+                    await gameProcessor.saveGameQuestionDAO({
+                        gameID: game._id,
+                        questionID: item.questionID,
+                        timing: item.timing,
+                        correct: item.correct,
+                        playerID: req.user._id
+                    })
+                    hiScore = await gameProcessor.getQuestionHiScoreDAO(req.user._id, item.questionID)
+                    if(!hiScore) {
+                        hiScore = await gameProcessor.saveHiScoreDAO({
+                            playerID: req.user._id,
+                            questionID: item.questionID,
+                            gameID: game._id,
+                            score
+                        })
+                    } else {
+                        if(score >= hiScore.score) {
+                            hiScore = await gameProcessor.updateHiScoreDAO(req.user._id, item.questionID, game._id, score);
+                        }
+                    }
+                    if(counter == req.body.gameTimings.length) {
+                        resolve();
+                    }
                 })
             } else {
-                if(score >= hiScore.score) {
-                    await gameProcessor.updateHiScoreDAO(req.user._id, item.questionID, game._id, score);
-                }
+                resolve();
             }
         })
 
@@ -193,7 +224,7 @@ class GameController {
     // Pass in game ID as req.query.gameID
     async deleteGame(req, res) {
         try {
-            var game = await gameProcessor.getGameDAO(req.query.gameID)
+            var game = await gameProcessor.getGameDAO(req.body.gameID)
         } catch (err) {
             return res.status(errorCodes.mongoDBError).send({
                 error: errorMessages.mongoDBGameSearchError
@@ -205,7 +236,7 @@ class GameController {
             })
         }
         try {
-            await gameProcessor.deleteGameDAO(req.query.gameID);
+            await gameProcessor.deleteGameDAO(req.body.gameID);
         } catch(err) {
             return res.status(errorCodes.mongoDBError).send({
                 error: "Something went wrong while trying to delete game"

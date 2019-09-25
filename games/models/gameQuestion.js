@@ -9,6 +9,10 @@ const GameQuestionSchema = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         required: true
     },
+    playerID: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true
+    },
     timing: Number,
     correct: Number,
     time: {

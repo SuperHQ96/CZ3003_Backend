@@ -14,6 +14,17 @@ class AuthenticationProcessor {
         return User.findOne({email}).exec();
     }
 
+    getRandomUserDAO() {
+        return User.aggregate([
+            { $match: { admin: false }},
+            { $sample : {size : 1}}
+        ]).exec();
+    }
+
+    getUserByNameDAO(name) {
+        return User.findOne({name}).exec();
+    }
+
     saveUserDAO(json) {
         const newUser = new User({
             email: json.email,

@@ -6,6 +6,12 @@ module.exports = (route, app) => {
     app.route(route + '/')
     .get(tokenAuth, authenticationController.getUser);
 
+    app.route(route + '/random')
+    .get(tokenAuth, authenticationController.getRandomUser);
+
+    app.route(route + '/search')
+    .get(tokenAuth, authenticationController.searchUser);
+
     app.route(route + '/')
     .post(authenticationController.signUp);
 

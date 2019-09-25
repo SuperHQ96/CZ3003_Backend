@@ -13,13 +13,13 @@ class GameProcessor {
         return GameQuestion.find({gameID}).exec();
     }
     getPlayerQuestionHistory(playerID, questionID) {
-        return GameQuestion.find({playerID, questionID}).sort({"time" : -1})
+        return GameQuestion.find({playerID}).where({questionID}).sort({"time" : -1}).exec();
     }
     getUserHiScoresDAO(playerID) {
         return HiScore.find({playerID}).exec();
     }
     getQuestionHiScoreDAO(playerID, questionID) {
-        return HiScore.find({playerID, questionID}).exec();
+        return HiScore.findOne({playerID, questionID}).exec();
     }
     getGameHiScoresDAO(gameID) {
         return HiScore.find({gameID}).exec();
@@ -46,7 +46,8 @@ class GameProcessor {
             gameID: json.gameID,
             questionID: json.questionID,
             timing: json.timing,
-            correct: json.correct
+            correct: json.correct,
+            playerID: json.playerID
         })
         return new Promise((resolve, reject) => {
             newGameQuestion
