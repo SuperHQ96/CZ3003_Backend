@@ -8,6 +8,8 @@ const { errorCodes } = require('../config/errorCodes');
 // HTTP library to make HTTP requests to other containers
 const axios = require('axios');
 
+const jwt = require('jsonwebtoken');
+
 class GameController {
     constructor() {
 
@@ -62,6 +64,40 @@ class GameController {
             )
         })
 
+    }
+
+    async getLeaderBoard(req, res) {
+        if(!req.query.n) {
+            return res.status(400).send({
+                error: "Please enter the number of games you want to obtain"
+            })
+        }
+        try {
+            var leaderboard = await gameProcessor.getHighestScoreGamesDAO(req.query.n);
+        } catch(error) {
+            return res.status(400).send({
+                error: "Something went wrong while trying to get leaderboard"
+            })
+        }
+        var promises = leaderboard.map(async (game) => {
+            axios.defaults.headers.get['Content-Type'] = 'application/json';
+            axios.defaults.headers.get['token'] = jwt.sign({_id: game.playerID}, process.env.jwtPrivateKey);
+            let { data } = await axios.get(`http://authentication:3000/api/authentication`);
+            return {
+                name: data.name, 
+                _id: game._id, 
+                playerID: game.playerID, 
+                timing: game.timing, 
+                score: game.score
+            }
+        })
+        Promise
+        .all(promises)
+        .then((data) => {
+            return res.status(200).send({
+                leaderboard: data
+            })
+        })
     }
 
     async getUserGames(req, res) {

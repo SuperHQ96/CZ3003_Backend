@@ -15,6 +15,9 @@ module.exports = (route, app) => {
     app.route(route + '/history')
     .get(tokenAuth, gameController.getQuestionHistory);
 
+    app.route(route + '/leaderboard')
+    .get(tokenAuth, gameController.getLeaderBoard);
+
     app.route(route + '/save')
     .post(tokenAuth, gameController.saveGame);
 

@@ -27,6 +27,9 @@ class GameProcessor {
     getGameHiScoresDAO(gameID) {
         return HiScore.find({gameID}).exec();
     }
+    getHighestScoreGamesDAO(number) {
+        return Game.find({}).sort({"score": -1}).limit(Number(number));
+    }
     saveGameDAO(json) {
         const newGame = new Game({
             playerID: json.playerID,
