@@ -5,6 +5,9 @@ const { errorMessages } = require("../config/errorMessages")
 // Load error codes
 const { errorCodes } = require('../config/errorCodes');
 
+// HTTP library to make HTTP requests to other containers
+const axios = require('axios');
+
 class ChallengeController {
     constructor() {
 
@@ -122,6 +125,31 @@ class ChallengeController {
                 error: errorMessages.challengeNotSavedProperly
             })
         }
+        axios.defaults.headers.put['Content-Type'] = 'application/json';
+        axios.defaults.headers.put['token'] = req.header('token');
+        axios.defaults.headers.put['intPass'] = process.env.internalPassword;
+        await new Promise((resolve, reject) => {
+            var counter = 0;
+            if(req.body.challengerTimings.length > 0) {
+                req.body.challengerTimings.forEach(async (item) => {
+                    counter++;
+                    if(item.correct) {
+                        await axios.put('http://questions:5000/api/questions/correct', {
+                            questionID: item.questionID
+                        })
+                    } else {
+                        await axios.put('http://questions:5000/api/questions/incorrect', {
+                            questionID: item.questionID
+                        })
+                    }
+                    if(counter == req.body.challengerTimings.length) {
+                        resolve();
+                    }
+                })
+            } else {
+                resolve()
+            }
+        })
 
         return res.status(200).send({
             challenge
@@ -165,6 +193,32 @@ class ChallengeController {
                 error: errorMessages.challengeNotSavedProperly
             })
         }
+
+        axios.defaults.headers.put['Content-Type'] = 'application/json';
+        axios.defaults.headers.put['token'] = req.header('token');
+        axios.defaults.headers.put['intPass'] = process.env.internalPassword;
+        await new Promise((resolve, reject) => {
+            var counter = 0;
+            if(req.body.challengeeTimings.length > 0) {
+                req.body.challengeeTimings.forEach(async (item) => {
+                    counter++;
+                    if(item.correct) {
+                        await axios.put('http://questions:5000/api/questions/correct', {
+                            questionID: item.questionID
+                        })
+                    } else {
+                        await axios.put('http://questions:5000/api/questions/incorrect', {
+                            questionID: item.questionID
+                        })
+                    }
+                    if(counter == req.body.challengeeTimings.length) {
+                        resolve();
+                    }
+                })
+            } else {
+                resolve()
+            }
+        })
 
         return res.status(200).send({
             challenge

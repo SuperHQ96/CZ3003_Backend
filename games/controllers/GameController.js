@@ -64,6 +64,19 @@ class GameController {
 
     }
 
+    async getUserGames(req, res) {
+        try {
+            var games = await gameProcessor.getPlayerGamesDAO(req.user._id);
+        } catch(error) {
+            return res.status(400).send({
+                error: "Something went wrong while trying to get user's games"
+            })
+        }
+        return res.status(200).send({
+            games
+        })
+    }
+
     async getUserHiScores(req, res) {
         try {
             var hiScores = await gameProcessor.getUserHiScoresDAO(req.user._id);
@@ -168,51 +181,73 @@ class GameController {
                 error: errorMessages.mongoDBGameSaveError
             })
         }
-        await new Promise((resolve, reject) => {
-            var counter = 0;
-            if(req.body.gameTimings.length > 0) {
-                req.body.gameTimings.forEach(async (item) => {
-                    counter++;
-                    let score = calculateSingleScore(item)
-                    let hiScore;
-                    // For each question, save a new gameQuestion document as well 
-                    // as check if there is a high score for the
-                    // player for this question.
-                    // If there is no high score, create a new high score record
-                    // and save the score just calculated as the high score as well
-                    // as the gameID.
-                    // If there is a high score, see if the newly calculated score
-                    // is higher than the previous high score. If it is, replace the
-                    // previous high score with the new score calculated and replace
-                    // the gameID as well.
-                    await gameProcessor.saveGameQuestionDAO({
-                        gameID: game._id,
-                        questionID: item.questionID,
-                        timing: item.timing,
-                        correct: item.correct,
-                        playerID: req.user._id
-                    })
-                    hiScore = await gameProcessor.getQuestionHiScoreDAO(req.user._id, item.questionID)
-                    if(!hiScore) {
-                        hiScore = await gameProcessor.saveHiScoreDAO({
-                            playerID: req.user._id,
-                            questionID: item.questionID,
+        axios.defaults.headers.put['Content-Type'] = 'application/json';
+        axios.defaults.headers.put['token'] = req.header('token');
+        axios.defaults.headers.put['intPass'] = process.env.internalPassword;
+        try {
+            await new Promise((resolve, reject) => {
+                var counter = 0;
+                if(req.body.gameTimings.length > 0) {
+                    req.body.gameTimings.forEach(async (item) => {
+                        counter++;
+                        let score = calculateSingleScore(item)
+                        let hiScore;
+                        // For each question, save a new gameQuestion document as well 
+                        // as check if there is a high score for the
+                        // player for this question.
+                        // If there is no high score, create a new high score record
+                        // and save the score just calculated as the high score as well
+                        // as the gameID.
+                        // If there is a high score, see if the newly calculated score
+                        // is higher than the previous high score. If it is, replace the
+                        // previous high score with the new score calculated and replace
+                        // the gameID as well.
+                        await gameProcessor.saveGameQuestionDAO({
                             gameID: game._id,
-                            score
+                            questionID: item.questionID,
+                            timing: item.timing,
+                            correct: item.correct,
+                            playerID: req.user._id
                         })
-                    } else {
-                        if(score >= hiScore.score) {
-                            hiScore = await gameProcessor.updateHiScoreDAO(req.user._id, item.questionID, game._id, score);
+                        hiScore = await gameProcessor.getQuestionHiScoreDAO(req.user._id, item.questionID)
+                        if(!hiScore) {
+                            hiScore = await gameProcessor.saveHiScoreDAO({
+                                playerID: req.user._id,
+                                questionID: item.questionID,
+                                gameID: game._id,
+                                score
+                            })
+                        } else {
+                            if(score >= hiScore.score) {
+                                hiScore = await gameProcessor.updateHiScoreDAO(req.user._id, item.questionID, game._id, score);
+                            }
                         }
-                    }
-                    if(counter == req.body.gameTimings.length) {
-                        resolve();
-                    }
-                })
-            } else {
-                resolve();
-            }
-        })
+                        try {
+                            if(item.correct) {
+                                await axios.put('http://questions:5000/api/questions/correct', {
+                                    questionID: item.questionID
+                                })
+                            } else {
+                                await axios.put('http://questions:5000/api/questions/incorrect', {
+                                    questionID: item.questionID
+                                })
+                            }
+                        } catch(error) {
+                            reject()
+                        }
+                        if(counter == req.body.gameTimings.length) {
+                            resolve();
+                        }
+                    })
+                } else {
+                    resolve();
+                }
+            })
+        } catch(error) {
+            return res.status(400).send({
+                error: "Something went wrong"
+            })
+        }
 
         return res.status(200).send({
             data: {

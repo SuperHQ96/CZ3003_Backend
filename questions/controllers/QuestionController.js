@@ -1,4 +1,5 @@
 const { questionProcessor } = require('../processors/QuestionProcessor');
+const { topicProcessor } = require('../processors/TopicProcessor');
 
 // Load error messages JSON
 const { errorMessages } = require("../config/errorMessages")
@@ -128,6 +129,24 @@ class QuestionController {
         }
 
         try {
+            var topic = await topicProcessor.getTopicByNameDAO(req.body.topic)
+        } catch(err) {
+            return res.status(errorCodes.mongoDBError).send({
+                error: "Something went wrong while trying to search for topic."
+            })
+        }
+
+        if(!topic) {
+            try {
+                topic = await topicProcessor.saveTopicDAO(req.body.topic)
+            } catch(error) {
+                return res.status(errorCodes.mongoDBError).send({
+                    error : errorMessages.mongoDBTopicSaveError
+                })
+            }
+        }
+
+        try {
             var question = await questionProcessor.saveQuestionDAO({
                 text: req.body.text,
                 difficulty: req.body.difficulty,
@@ -165,6 +184,45 @@ class QuestionController {
             return res.status(errorCodes.notFound).send({
                 error: errorMessages.questionNotFound
             })
+        }
+
+        if(req.body.topic) {
+            try {
+                var topic = await topicProcessor.getTopicByNameDAO(req.body.topic)
+            } catch(err) {
+                return res.status(errorCodes.mongoDBError).send({
+                    error: "Something went wrong while trying to search for topic."
+                })
+            }
+    
+            if(!topic) {
+                try {
+                    topic = await topicProcessor.saveTopicDAO(req.body.topic)
+                } catch(error) {
+                    return res.status(errorCodes.mongoDBError).send({
+                        error : errorMessages.mongoDBTopicSaveError
+                    })
+                }
+            }
+        }
+
+        if(req.body.topic !== question.topic) {
+            try {
+                var count = await questionProcessor.getTopicQuestionsCount(question.topic)
+            } catch(error) {
+                return res.status(errorCodes.mongoDBError).send({
+                    error: "Something went wrong while trying to get count of all topic questions"
+                })
+            }
+            if(count === 1) {
+                try {
+                    await topicProcessor.deleteTopicByNameDAO(question.topic)
+                } catch(error) {
+                    return res.status(errorCodes.mongoDBError).send({
+                        error: "Something went wrong while trying to delete topic"
+                    })
+                }
+            }
         }
 
         try {
@@ -218,6 +276,13 @@ class QuestionController {
                 error: errorMessages.mongoDBQuestionCorrectIncrementError
             })
         }
+        try {
+            await topicProcessor.incrementTopicCorrectAnswersDAO(question.topic);
+        } catch(error) {
+            return res.status(errorCodes.mongoDBError).send({
+                error: "Something went wrong while trying to increment topic's correct answer counts"
+            })
+        }
 
         return res.status(200).send({
             data: {
@@ -246,6 +311,13 @@ class QuestionController {
                 error: errorMessages.mongoDBQuestionIncorrectIncrementError
             })
         }
+        try{
+            await topicProcessor.incrementTopicIncorrectAnswersDAO(question.topic)
+        } catch(error) {
+            return res.status(errorCodes.mongoDBError).send({
+                error: "Something went wrong while trying to increment topic's incorrect answer counts"
+            })
+        }
 
         return res.status(200).send({
             data: {
@@ -268,6 +340,22 @@ class QuestionController {
             })
         }
         try {
+            var count = await questionProcessor.getTopicQuestionsCount(question.topic)
+        } catch(error) {
+            return res.status(errorCodes.mongoDBError).send({
+                error: "Something went wrong while trying to get count of all topic questions"
+            })
+        }
+        if(count === 1) {
+            try {
+                await topicProcessor.deleteTopicByNameDAO(question.topic)
+            } catch(error) {
+                return res.status(errorCodes.mongoDBError).send({
+                    error: "Something went wrong while trying to delete topic"
+                })
+            }
+        }
+        try {
             await questionProcessor.deleteQuestionDAO(question._id);
         } catch(error) {
             return res.status(errorCodes.mongoDBError).send({
@@ -276,6 +364,20 @@ class QuestionController {
         }
 
         return res.status(204).send({})
+    }
+    async getAllTopics(req, res) {
+        try{
+            var topics = await topicProcessor.getAllTopicsDAO();
+        } catch(error) {
+            return res.status(errorCodes.mongoDBError).send({
+                error: "Something went wrong while trying to get all topics"
+            })
+        }
+        return res.status(200).send({
+            data: {
+                topics
+            }
+        })
     }
 }
 

@@ -51,6 +51,20 @@ class AuthenticationController {
             })
         }
 
+        try {
+            user = await authenticationProcessor.getUserByNameDAO(req.body.name);
+        } catch (error) {
+            return res.status(errorCodes.mongoDBError).send({
+                error: errorMessages.mongoDBUserSearchError
+            })
+        }
+
+        if(user) {
+            return res.status(errorCodes.alreadyExist).send({
+                error: errorMessages.userNameAlreadyExists
+            })
+        }
+
         let password;
         let saltPW;
         saltPW = await bcrypt.genSalt();
@@ -60,7 +74,7 @@ class AuthenticationController {
             user = await authenticationProcessor.saveUserDAO({
                 email: req.body.email,
                 password,
-                admin: false,
+                admin: (req.body.admin) ? true : false,
                 name: req.body.name? req.body.name : undefined
             })
         } catch (error) {
@@ -90,7 +104,7 @@ class AuthenticationController {
 
     async getRandomUser(req, res) {
         try {
-            var user = await authenticationProcessor.getRandomUserDAO();
+            var user = await authenticationProcessor.getRandomUserDAO(req.user._id);
         } catch(error) {
             return res.status(errorCodes.mongoDBError).send({
                 error: errorMessages.mongoDBUserSearchError

@@ -12,6 +12,9 @@ class GameProcessor {
     getGameQuestionsDAO(gameID) {
         return GameQuestion.find({gameID}).exec();
     }
+    getPlayerGamesDAO(playerID) {
+        return Game.find({playerID}).exec();
+    }
     getPlayerQuestionHistory(playerID, questionID) {
         return GameQuestion.find({playerID}).where({questionID}).sort({"time" : -1}).exec();
     }

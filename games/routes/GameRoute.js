@@ -6,6 +6,9 @@ module.exports = (route, app) => {
     app.route(route + '/')
     .get(tokenAuth, gameController.getGame);
 
+    app.route(route + '/past')
+    .get(tokenAuth, gameController.getUserGames);
+
     app.route(route + '/hiScores')
     .get(tokenAuth, gameController.getUserHiScores);
 

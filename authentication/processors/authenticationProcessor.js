@@ -1,5 +1,7 @@
 const { User } = require('../models/user');
 
+const mongoose = require('mongoose');
+
 class AuthenticationProcessor {
 
     constructor() {
@@ -14,9 +16,9 @@ class AuthenticationProcessor {
         return User.findOne({email}).exec();
     }
 
-    getRandomUserDAO() {
+    getRandomUserDAO(userID) {
         return User.aggregate([
-            { $match: { admin: false }},
+            { $match: { admin: false, "_id": {"$nin": [mongoose.Types.ObjectId(userID)]} }},
             { $sample : {size : 1}}
         ]).exec();
     }

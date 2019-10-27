@@ -1,6 +1,7 @@
 exports.errorMessages = {
     mongoDBUserSearchError: "Something went wrong while searching for user",
     userEmailAlreadyExist: "Email already saved",
+    userNameAlreadyExists: "Name already saved",
     mongoDBUserSaveError: "Something went wrong while trying to save new user",
     authenticationTokenGenerateError: "Something went wrong while trying to generate authentication token",
     noAuthenticationTokenProvided: "No authentication token provided",

@@ -12,8 +12,11 @@ module.exports = (route, app) => {
     app.route(route + '/sample')
     .get(tokenAuth, questionController.getSampleQuestions);
 
+    app.route(route + '/topics')
+    .get(tokenAuth, questionController.getAllTopics);
+
     app.route(route + '/getQuestions')
-    .post(internalAuth, tokenAuth, questionController.getQuestions);
+    .post(tokenAuth, questionController.getQuestions);
 
     app.route(route + '/save')
     .post(tokenAuth, questionController.saveNewQuestion);
