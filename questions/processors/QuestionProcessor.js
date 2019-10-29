@@ -24,6 +24,10 @@ class QuestionProcessor {
         return Question.find({topic}).count().exec();
     }
 
+    getTopicQuestionsDAO(topic) {
+        return Question.find({topic}).exec();
+    }
+
     saveQuestionDAO(json) {
         const newQuestion = new Question({
             text: json.text,

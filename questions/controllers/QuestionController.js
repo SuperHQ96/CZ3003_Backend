@@ -96,6 +96,25 @@ class QuestionController {
         }
     }
 
+    async getTopicQuestions(req, res) {
+        if(!req.query.topic) {
+            return res.status(errorCodes.incompleteData).send({
+                error: "Please enter a topic"
+            })
+        }
+        try {
+            var questions = await questionProcessor.getTopicQuestionsDAO(req.query.topic);
+        } catch (error) {
+            return res.status(errorCodes.mongoDBError).send({
+                error: "Something went wrong while trying to get topic questions"
+            })
+        }
+
+        res.status(200).send({
+            questions
+        })
+    }
+
     async saveNewQuestion (req, res) {
         if(!req.body.text) {
             return res.status(errorCodes.incompleteData).send({

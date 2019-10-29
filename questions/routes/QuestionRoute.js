@@ -15,6 +15,9 @@ module.exports = (route, app) => {
     app.route(route + '/topics')
     .get(tokenAuth, questionController.getAllTopics);
 
+    app.route(route + '/topic/questions')
+    .get(tokenAuth, questionController.getTopicQuestions);
+
     app.route(route + '/getQuestions')
     .post(tokenAuth, questionController.getQuestions);
 
