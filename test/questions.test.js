@@ -14,7 +14,7 @@ describe('When logged in', () => {
     var token = "";
     beforeEach(async () => {
         let { data } = await axios.post(`${ENDPOINT_PORT}/api/authentication/login`, {
-            email: "blah2@gmail.com",
+            email: "zhaohanqing96@gmail.com",
             password: "12345678"
         })
         token = data.token

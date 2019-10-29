@@ -24,7 +24,7 @@ describe('When not signed up', () => {
         })
         test('Cannot sign up with an email already saved', async () => {
             axios.post(`${ENDPOINT_PORT}/api/authentication`, {
-                "email": "blah2@gmail.com",
+                "email": "zhaohanqing96@gmail.com",
                 "password": "12345678",
                 "avatar": 2,
                 "name": "HQ"
@@ -40,7 +40,7 @@ describe('When logged in', () => {
     var token = "";
     beforeEach(async () => {
         let { data } = await axios.post(`${ENDPOINT_PORT}/api/authentication/login`, {
-            email: "blah2@gmail.com",
+            email: "zhaohanqing96@gmail.com",
             password: "12345678"
         })
         token = data.token
@@ -49,6 +49,6 @@ describe('When logged in', () => {
     test('Can successfully get the user\'s details', async () => {
         axios.defaults.headers.get['token'] = token;
         let { data } = await axios.get(`${ENDPOINT_PORT}/api/authentication`)
-        expect(data.email).toBe('blah2@gmail.com')
+        expect(data.email).toBe('zhaohanqing96@gmail.com')
     })
 })

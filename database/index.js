@@ -46,7 +46,7 @@ const injectData = async () => {
                 let user = global.users[Math.floor(Math.random()*global.users.length)];
                 axios.defaults.headers.post['token'] = user.token
                 counter2++;
-                await sleep(2000*counter2);
+                await sleep(500*counter2);
                 let { data } = await axios.post(`${ENDPOINT}:${PORT}/api/questions/save`, questionn)
                 counter++;
                 if(counter == global.questions.length) {
