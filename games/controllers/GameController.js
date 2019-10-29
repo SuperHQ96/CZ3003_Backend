@@ -196,7 +196,7 @@ class GameController {
     // req.body.gameTimings should be an array where each item
     // contains questionID, timing and correct fields
     async saveGame(req, res) {
-        console.log(req.body)
+        console.log(req.user._id)
         if(!Array.isArray(req.body.gameTimings)) {
             res.status(errorCodes.incompleteData).send({
                 error: errorMessages.gameTimingsNotProvided
