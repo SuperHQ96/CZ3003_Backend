@@ -102,6 +102,26 @@ class AuthenticationController {
 
     }
 
+    async getUserByID(req, res) {
+        let user;
+        try {
+            user = await authenticationProcessor.getUserDAO(req.query._id);
+        } catch (error) {
+            return res.status(errorCodes.mongoDBError).json({ 'error': errorMessages.mongoDBUserSearchError});
+        }
+
+        // If user not in database, return error
+        if (!user) return res.status(errorCodes.userNotFound).json(
+            {
+                'error': "User not found"
+            }
+        );
+
+        const data = _.pick(user, ['_id', 'email', 'admin', 'avatar', 'name']);
+
+        res.status(200).json(data);
+    }
+
     async getRandomUser(req, res) {
         try {
             var user = await authenticationProcessor.getRandomUserDAO(req.user._id);

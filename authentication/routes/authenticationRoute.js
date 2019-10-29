@@ -12,6 +12,9 @@ module.exports = (route, app) => {
     app.route(route + '/search')
     .get(tokenAuth, authenticationController.searchUser);
 
+    app.route(route + '/user')
+    .get(tokenAuth, authenticationController.getUserByID);
+
     app.route(route + '/')
     .post(authenticationController.signUp);
 
