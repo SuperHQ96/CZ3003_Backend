@@ -191,6 +191,7 @@ class GameController {
     // req.body.gameTimings should be an array where each item
     // contains questionID, timing and correct fields
     async saveGame(req, res) {
+        console.log(req.body)
         if(!Array.isArray(req.body.gameTimings)) {
             res.status(errorCodes.incompleteData).send({
                 error: errorMessages.gameTimingsNotProvided
@@ -260,16 +261,24 @@ class GameController {
                         }
                         try {
                             if(item.correct) {
-                                await axios.put('http://questions:5000/api/questions/correct', {
-                                    questionID: item.questionID
-                                })
+                                try {
+                                    await axios.put('http://questions:5000/api/questions/correct', {
+                                        questionID: item.questionID
+                                    })
+                                } catch(err) {
+                                    reject(err)
+                                }
                             } else {
-                                await axios.put('http://questions:5000/api/questions/incorrect', {
-                                    questionID: item.questionID
-                                })
+                                try {
+                                    await axios.put('http://questions:5000/api/questions/incorrect', {
+                                        questionID: item.questionID
+                                    })
+                                } catch(err) {
+                                    reject(err)
+                                }
                             }
                         } catch(error) {
-                            reject()
+                            reject(error)
                         }
                         if(counter == req.body.gameTimings.length) {
                             resolve();
@@ -281,7 +290,7 @@ class GameController {
             })
         } catch(error) {
             return res.status(400).send({
-                error: "Something went wrong"
+                error
             })
         }
 
