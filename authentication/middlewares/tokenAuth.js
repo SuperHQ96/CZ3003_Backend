@@ -4,6 +4,8 @@ const { errorMessages } = require("../config/errorMessages")
 // Load error codes
 const { errorCodes } = require('../config/errorCodes');
 
+const { User } = require('../models/user');
+
 function tokenAuth(req, res, next) {
     // Read sent token from api request header
     const token = req.header('token');
@@ -20,7 +22,15 @@ function tokenAuth(req, res, next) {
 
         req.user = decodedPayload;
 
-        next();
+
+        User.findOne({_id: req.user._id}).exec()
+        .then((user) => {
+            if(user) {
+                next();
+            } else {
+                res.status(errorCodes.invalidToken).send({error: "User ID from token does not exist."})
+            }
+        })
 
     }
     catch (ex) {
