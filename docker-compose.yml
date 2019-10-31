@@ -1,0 +1,131 @@
+version: '3'
+services:
+  proxy:
+    container_name: nginx-gw
+    restart: always
+    build:
+      dockerfile: Dockerfile
+      context: ./nginx-gw
+    ports:
+      - "80:80"
+    networks:
+      - cz3003
+    
+  questions:
+    container_name: questions
+    restart: always
+
+    build:
+      dockerfile: Dockerfile
+      context: ./questions
+    environment:
+      - email_password=${email_password}
+      - jwtPrivateKey=${jwtPrivateKey}
+      - internalPassword=${internalPassword}
+    ports:
+      - '5000:5000'
+    networks:
+      - cz3003
+  
+  authentication:
+    container_name: authentication
+    restart: always
+    
+    build:
+      dockerfile: Dockerfile
+      context: ./authentication
+
+    environment:
+      - email_password=${email_password}
+      - jwtPrivateKey=${jwtPrivateKey}
+      - internalPassword=${internalPassword}
+
+    # with nginx
+    ports:
+      - '3000:3000'
+
+    networks:
+      - cz3003
+
+  challenges:
+    container_name: challenges
+    restart: always
+    
+    build:
+      dockerfile: Dockerfile
+      context: ./challenges
+
+    environment:
+      - email_password=${email_password}
+      - jwtPrivateKey=${jwtPrivateKey}
+      - internalPassword=${internalPassword}
+
+    # with nginx
+    ports:
+      - '7000:7000'
+
+    networks:
+      - cz3003
+
+  games:
+    container_name: games
+    restart: always
+    
+    build:
+      dockerfile: Dockerfile
+      context: ./games
+
+    environment:
+      - email_password=${email_password}
+      - jwtPrivateKey=${jwtPrivateKey}
+      - internalPassword=${internalPassword}
+
+    # with nginx
+    ports:
+      - '13000:13000'
+
+    networks:
+      - cz3003
+
+  messages:
+    container_name: messages
+    restart: always
+    
+    build:
+      dockerfile: Dockerfile
+      context: ./messages
+
+    environment:
+      - email_password=${email_password}
+      - jwtPrivateKey=${jwtPrivateKey}
+      - internalPassword=${internalPassword}
+
+    # with nginx
+    ports:
+      - '11000:11000'
+
+    networks:
+      - cz3003
+
+  # Troubleshooting: command line may have this error: Insufficient free space
+  # for journal files. Please make at least 3379MB available in /data/db/journal
+  # or use --smallfiles. This is likely because containers may not completely be
+  # cleared using the 'remove' command. Use 'docker volume rm $(docker volume ls -qf dangling=true)'
+  # to clean up. Refer to https://github.com/chadoe/docker-cleanup-volumes for
+  # more details
+  mongo:
+    container_name: mongo
+    image: mongo:3.4.23
+
+    networks:
+      - cz3003
+
+    # Use default MongoDB ports
+    ports:
+      - '27017:27017'
+
+# Use network to avoid 'circular dependency' error when trying
+# to link containers together so that they can communicate
+networks: 
+  cz3003:
+    driver: bridge # Default for driver for single host (Use 'overlay' on Swarm)
