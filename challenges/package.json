@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/SuperHQ96/CZ3003_Backend#readme",
   "dependencies": {
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.21",
     "express": "^4.16.4",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.4.20",
